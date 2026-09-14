@@ -1,0 +1,148 @@
+# Free, auto-refreshing list of US-listed companies
+
+This sets up a CSV of US-exchange-listed companies (tickers, industry,
+exchange, state of incorporation, IPO date where available, etc.) that
+refreshes itself on a schedule -- entirely on free tiers, with the compute
+running in the cloud so your computer doesn't need to be on.
+
+**Files in this folder:**
+- `fetch_us_stock_universe.py` -- the script that builds the CSV
+- `.github/workflows/refresh-stock-list.yml` -- tells GitHub to run the
+  script automatically on a schedule
+- `README.md` -- this file
+
+**Data sources (all free, no credit card):**
+- Nasdaq Trader symbol directory -- base list of every ticker + an ETF flag
+  used to exclude funds
+- SEC EDGAR -- industry (SIC code), state of incorporation, fiscal year end,
+  former names
+- Alpha Vantage (optional) -- IPO/first-listed date
+
+---
+
+## Step 1: Create a free GitHub account and repository
+
+1. Go to [github.com](https://github.com) and sign up (free).
+2. Click the **+** in the top right -> **New repository**.
+3. Name it something like `us-stock-universe`. Public is simplest (and
+   gives you unlimited free Actions minutes); Private also works but has a
+   monthly minutes cap on the free plan -- this job easily fits within it
+   for a weekly schedule.
+4. Click **Create repository**.
+
+## Step 2: Add the files to your repo
+
+Easiest way -- no installs required:
+
+1. In your new repo, click **Add file -> Create new file**.
+2. Name it `fetch_us_stock_universe.py`, paste in the contents of that file
+   from this folder, and commit it.
+3. Click **Add file -> Create new file** again. This time type the name
+   exactly as `.github/workflows/refresh-stock-list.yml` (typing the slashes
+   automatically creates the folders). Paste in that file's contents and
+   commit.
+
+(If you're comfortable with git locally, you can instead clone the repo,
+copy both files in, and `git push` -- same result.)
+
+## Step 3 (optional): Get a free Alpha Vantage API key
+
+This only adds the "IPO/First Listed Date" column -- skip it if you don't
+need that field.
+
+1. Go to https://www.alphavantage.co/support/#api-key
+2. Enter an email, get a free key instantly (no payment info required).
+
+## Step 4: Add your SEC User-Agent (and API key) as repo secrets
+
+The SEC requires every request to identify a real contact -- this isn't
+optional on their end, so set it here rather than editing the script.
+
+1. In your repo, go to **Settings -> Secrets and variables -> Actions**.
+2. Click **New repository secret**.
+   - Name: `SEC_USER_AGENT`
+   - Value: something like `Jane Doe jane@example.com` (your real name/org
+     and a real email -- SEC blocks generic or blank User-Agents)
+3. Click **New repository secret** again (only if you did Step 3):
+   - Name: `ALPHA_VANTAGE_API_KEY`
+   - Value: the key you got from Alpha Vantage
+
+## Step 5: Run it and check the result
+
+1. Go to the **Actions** tab in your repo.
+2. Click **Refresh US company list** on the left, then **Run workflow**
+   (the `workflow_dispatch` trigger added a manual button for this).
+3. It'll take roughly 30-60 minutes for a full run (the SEC lookup is one
+   request per company, deliberately rate-limited so it doesn't hammer
+   their servers). Watch progress under the running job's logs.
+4. When it finishes, `us_listed_companies.csv` will appear in your repo,
+   and the workflow will keep re-running automatically every Monday
+   (edit the `cron` line in the workflow file to change the schedule --
+   e.g. `0 13 * * *` for daily).
+
+**To test quickly first** instead of waiting an hour: in the workflow file,
+add `MAX_COMPANIES: "50"` under the `env:` section of the "Run fetch
+script" step. Remove it once you've confirmed everything works.
+
+## Step 6: Connect Excel so it refreshes automatically
+
+Once the CSV exists in your repo, grab its "raw" URL: open the file on
+github.com and click **Raw** -- copy that URL
+(looks like `https://raw.githubusercontent.com/<you>/<repo>/main/us_listed_companies.csv`).
+
+In Excel:
+1. **Data** tab -> **Get Data** -> **From File** -> **From Text/CSV**... or,
+   on some versions, **Get Data** -> **From Other Sources** -> **From Web**,
+   and paste that raw URL.
+2. Click **Load**.
+3. Right-click the query in **Queries & Connections** -> **Properties**.
+4. Check **Refresh data when opening the file**, and optionally
+   **Refresh every N minutes** while the workbook is open.
+
+Now every time you open the workbook, Excel pulls the latest version of
+the file straight from GitHub.
+
+**Bonus option -- Google Sheets:** paste
+`=IMPORTDATA("https://raw.githubusercontent.com/<you>/<repo>/main/us_listed_companies.csv")`
+into cell A1 of a Google Sheet. Google Sheets refreshes `IMPORTDATA`
+periodically on its own, even while the sheet is closed -- fully free, no
+setup beyond that one formula.
+
+---
+
+## What's in the CSV
+
+| Column | Source | Notes |
+|---|---|---|
+| Ticker | Nasdaq Trader | |
+| Company Name | SEC (falls back to Nasdaq's name) | |
+| Exchange | Nasdaq Trader | NASDAQ, NYSE, NYSE American, NYSE Arca, Cboe BZX |
+| Industry (SIC Description) | SEC | SEC's standard industry classification |
+| SIC Code | SEC | numeric code behind the description |
+| CIK | SEC | SEC's unique company ID, handy for further lookups |
+| State of Incorporation | SEC | |
+| Fiscal Year End | SEC | MMDD format |
+| IPO/First Listed Date | Alpha Vantage (optional) | blank if no key configured or data unavailable |
+| Former Name(s) | SEC | semicolon-separated |
+| SEC Exchange(s) | SEC | SEC's own record of listing exchange(s) |
+
+## Known limitations (worth knowing about)
+
+- **"Actual company" filtering is name/flag-based.** It excludes anything
+  flagged as an ETF by Nasdaq, plus names containing words like "fund,"
+  "trust," "warrant," "preferred," "unit," "SPAC," etc. This is very
+  effective but not perfect -- a handful of edge cases may slip through in
+  either direction. Adjust `EXCLUDE_NAME_KEYWORDS` in the script to tune it.
+- **Not every ticker gets full SEC enrichment.** Share-class and
+  special-security tickers are sometimes formatted differently between
+  Nasdaq's directory and SEC's ticker map (e.g. `BRK.A` vs `BRK-A`), so a
+  small percentage won't match up to a CIK and will only have the basic
+  Nasdaq fields. Common single-class stocks (the vast majority) match fine.
+- **IPO date isn't a field SEC tracks directly.** Alpha Vantage's
+  `ipoDate` is the best free source for it, but it isn't complete or
+  guaranteed accurate for older listings.
+- **Runtime.** The SEC lookup step is intentionally slow (about 9
+  requests/second) to respect SEC's fair-access limits, so a full run
+  covering ~5,000-6,000 companies takes roughly 30-60 minutes. This runs
+  in GitHub's cloud, not on your computer, so it doesn't block you from
+  doing anything else.
