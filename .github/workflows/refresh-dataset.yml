@@ -1,0 +1,142 @@
+name: Refresh stock universe
+
+on:
+  schedule:
+    # 07:20 UTC on Saturdays. Weekends are quiet on the SEC's servers, and
+    # the odd minute avoids the top-of-the-hour stampede that every other
+    # scheduled job on GitHub joins.
+    - cron: "20 7 * * 6"
+  workflow_dispatch:
+    inputs:
+      skip_prices:
+        description: "Skip the Stooq price step"
+        type: boolean
+        default: false
+
+# Two copies of this job running at once would double our request rate
+# against the SEC, which is the one thing the fair-access policy counts.
+concurrency:
+  group: refresh-dataset
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+
+    env:
+      SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
+      # The SEC's published ceiling is 10 req/s. Half of that leaves plenty
+      # of headroom and still gets through the whole market in minutes.
+      SEC_RATE_PER_SEC: "5"
+      PROFILE_TTL_DAYS: "7"
+      MAX_PROFILE_FETCHES: "12000"
+      ANNUAL_YEARS: "4"
+      INSTANT_QUARTERS: "6"
+      QUARTERLY_PERIODS: "6"
+      PRICE_HISTORY_BUDGET: "2500"
+      STOOQ_RATE_PER_SEC: "1.5"
+      ENABLE_PRICES: ${{ inputs.skip_prices && '0' || '1' }}
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Check the SEC identity secret is set
+        run: |
+          if [ -z "$SEC_USER_AGENT" ]; then
+            echo "::error::SEC_USER_AGENT secret is not set."
+            echo "Add it under Settings > Secrets and variables > Actions."
+            echo 'Format: "Your Name your@email.com"'
+            exit 1
+          fi
+
+      # The cache is what keeps this polite. Restored responses are either
+      # reused outright or revalidated with a cheap conditional request, so a
+      # steady-state weekly run makes a small fraction of the requests a cold
+      # run would.
+      - name: Restore HTTP cache
+        uses: actions/cache/restore@v4
+        id: http-cache
+        with:
+          path: |
+            .cache
+            data
+          key: universe-cache-${{ github.run_id }}
+          restore-keys: |
+            universe-cache-
+
+      - name: Build ticker universe
+        run: python build_universe.py
+
+      - name: Enrich with SEC company profiles
+        run: python enrich_profiles.py
+
+      - name: Enrich with XBRL fundamentals
+        run: python enrich_fundamentals.py
+
+      - name: Enrich with prices
+        continue-on-error: true
+        run: python enrich_prices.py
+
+      - name: Build final dataset
+        run: python build_dataset.py
+
+      - name: Prune stale cache entries
+        run: |
+          find .cache -type f -mtime +60 -delete 2>/dev/null || true
+          echo "Cache size after prune: $(du -sh .cache 2>/dev/null | cut -f1)"
+
+      - name: Save HTTP cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: |
+            .cache
+            data
+          key: universe-cache-${{ github.run_id }}
+
+      - name: Commit refreshed dataset
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f us_listed_companies.csv us_listed_companies.xlsx data/changes.csv 2>/dev/null || true
+          if git diff --staged --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Refresh dataset ($(date -u +%Y-%m-%d))"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Dataset refresh"
+            echo ""
+            if [ -f us_listed_companies.csv ]; then
+              echo "- Rows: $(( $(wc -l < us_listed_companies.csv) - 1 ))"
+              echo "- Columns: $(head -1 us_listed_companies.csv | tr ',' '\n' | wc -l)"
+            fi
+            if [ -f data/changes.csv ]; then
+              echo "- Added since last run: $(grep -c ',*added' data/changes.csv || echo 0)"
+              echo ""
+              echo "<details><summary>Listing changes</summary>"
+              echo ""
+              echo '```'
+              head -40 data/changes.csv
+              echo '```'
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
