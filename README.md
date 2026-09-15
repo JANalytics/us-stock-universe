@@ -1,25 +1,27 @@
 # US stock universe
 
 A free, self-refreshing dataset of every operating company listed on a US
-exchange, with enough fundamental, valuation and filing-behaviour data to
-browse by hand and decide what's worth reading a 10-K about.
+exchange, with enough fundamental and filing-behaviour data to browse by hand
+and decide what's worth reading a 10-K about.
 
-No API keys. No paid services. No accounts. Runs on GitHub Actions.
+Every number comes from SEC filings. No API keys, no paid services, no
+accounts, no third-party data sources. Runs on GitHub Actions.
 
 ## What you get
 
 `us_listed_companies.csv` and `us_listed_companies.xlsx` — roughly 5,000 rows,
-one per listed equity, with about 100 columns grouped into:
+one per listed equity, with about 90 columns grouped into:
 
 | Group | Examples |
 |---|---|
 | Identity | ticker, issuer, exchange, sector, SIC industry, CIK, HQ city/state, incorporation state, filer category |
-| Size & valuation | price, market cap, enterprise value, public float, P/E, P/S, P/B, EV/Sales, EV/EBIT, FCF yield, dividend & buyback yield |
-| Income statement | revenue (3 years), gross profit, operating income, net income, diluted EPS, R&D, stock comp |
-| Margins & returns | gross/operating/net/FCF margin, ROE, ROA, R&D and stock comp as % of revenue |
+| Size | public float, shares outstanding, revenue, total assets |
+| Rough valuation | float / revenue, float / net income, float / book value, float / FCF |
+| Per share | revenue, book value, free cash flow, net cash, diluted EPS |
+| Income statement | revenue (3 years), gross profit, operating income, net income, R&D, stock comp |
+| Margins & returns | gross/operating/net/FCF margin, ROE, ROA, return on capital |
 | Growth | revenue growth 1Y, revenue CAGR 2Y, net income growth, latest-quarter revenue YoY, Rule of 40, share count change |
-| Cash flow & balance sheet | operating cash flow, capex, free cash flow, assets, equity, cash & investments, total debt, net cash, retained earnings, current ratio, debt/equity, net debt/FCF, interest coverage |
-| Price behaviour | 52-week high/low, % off high, 200-day MA, 20-day average dollar volume, 3M and 12M returns |
+| Cash flow & balance sheet | operating cash flow, capex, free cash flow, equity, cash & investments, total debt, net cash, retained earnings, current ratio, debt/equity, net debt/FCF, interest coverage |
 | Filing behaviour | latest 10-K and 10-Q dates, months since annual report, first EDGAR filing, counts of 8-K / Form 4 / 424B / S-1 & S-3 / SC 13D&G in the last 12 months, late-filing notices |
 | Flags | plain-language notes such as *accumulated deficit*, *negative book equity*, *late-filing notice*, *share count +20% in 1y* |
 
@@ -31,9 +33,31 @@ run — new listings, spin-offs, uplistings, delistings and acquisitions. For
 finding companies nobody has written about yet, this is often the most useful
 file in the repo.
 
-## Data sources
+## There is no price data, on purpose
 
-Everything below is free, public, and usable without registering.
+Every free price source is a private site with no published rate limit, no
+service guarantee and no obligation to keep its URL format stable. Depending
+on one means the dataset breaks quietly and at an unpredictable time.
+
+So this project is SEC-only, and handles valuation two ways instead:
+
+- **Per-share columns.** Revenue, book value, free cash flow and net cash are
+  all divided by shares outstanding. Look up a price for a company you
+  actually care about and any multiple you want is one division away.
+- **Public float**, from the 10-K cover page. It is a real dollar figure filed
+  with the SEC, so it sorts the universe by size sensibly. But it is measured
+  on a single date — usually the last business day of the company's most
+  recent second quarter — so it can be up to a year stale, and it excludes
+  insider-held shares. The `Float / ...` ratios are a browsing aid, not a
+  valuation. The `PublicFloat As Of` column tells you how stale.
+
+If you want live multiples later, the clean place to add them is a separate
+script that reads `us_listed_companies.csv`, fetches prices for a shortlist
+you've already narrowed down, and writes its own file. Fetching prices for a
+few dozen names you care about is a completely different problem from fetching
+them for five thousand you don't.
+
+## Data sources
 
 | Source | Used for | Requests per refresh |
 |---|---|---|
@@ -41,7 +65,6 @@ Everything below is free, public, and usable without registering.
 | [SEC `company_tickers_exchange.json`](https://www.sec.gov/files/company_tickers_exchange.json) | ticker → CIK mapping | 2 |
 | [SEC submissions API](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) | company metadata and filing history | ~1 per company |
 | [SEC XBRL frames API](https://www.sec.gov/search-filings/edgar-application-programming-interfaces) | all fundamentals | ~250 total, for the entire market |
-| [Stooq](https://stooq.com) | prices and price history (optional) | batched; budgeted per run |
 
 ### Why the frames API matters
 
@@ -82,9 +105,8 @@ block. Six things in this repo address that:
 
 1. **One choke point.** Every outbound request in the project goes through
    `HttpClient` in `common.py`. There is exactly one place that controls pace.
-2. **Token-bucket rate limiting, per host.** Default 5 req/s to the SEC — half
-   the published ceiling — and 1.5 req/s to Stooq, which publishes no limit at
-   all and therefore deserves more caution, not less.
+2. **Token-bucket rate limiting, per host.** Default 5 req/s — half the
+   published ceiling.
 3. **A declared User-Agent.** `SEC_USER_AGENT` must contain a real name and
    email. The scripts refuse to start without it, because an unidentified
    client is the single most common reason people get 403'd by `data.sec.gov`.
@@ -100,9 +122,7 @@ block. Six things in this repo address that:
    matters: without it, retries synchronise and arrive in lockstep.
 6. **Budgets and a circuit breaker.** Each run has a hard request ceiling, and
    25 consecutive failures aborts the step rather than hammering a source
-   that's already unhappy. The expensive per-ticker price history runs on a
-   per-run budget (stalest first), so it fills in over a few weeks and no
-   single run ever looks like a crawl.
+   that's already unhappy.
 
 The workflow also uses a `concurrency` group, so two runs can never overlap and
 silently double the request rate.
@@ -114,8 +134,16 @@ silently double the request rate.
 1. Add a repository secret named `SEC_USER_AGENT` under
    **Settings → Secrets and variables → Actions**, formatted like
    `Jane Doe jane@example.com`.
-2. That's it. The workflow runs every Saturday and commits the refreshed files.
+2. Under **Settings → Actions → General → Workflow permissions**, select
+   **Read and write permissions** so the job can commit its results.
+3. The workflow runs Tuesdays and Saturdays and commits the refreshed files.
    You can also trigger it by hand from the **Actions** tab.
+
+The twice-weekly schedule is deliberate. GitHub evicts Actions caches after
+7 days without a hit, and a once-weekly schedule sits right on that boundary —
+one delayed run and you lose the cache, which means a cold rebuild and several
+thousand extra requests to the SEC. The midweek run is nearly free because
+everything is still inside its TTL; it exists to keep the cache warm.
 
 ### Locally
 
@@ -126,11 +154,10 @@ export SEC_USER_AGENT="Jane Doe jane@example.com"
 python build_universe.py       # 4 requests
 python enrich_profiles.py      # ~1 per company, cached for a week
 python enrich_fundamentals.py  # ~250 requests for the whole market
-python enrich_prices.py        # optional; set ENABLE_PRICES=0 to skip
 python build_dataset.py        # no network at all
 ```
 
-A cold first run takes roughly 30–60 minutes, almost all of it in
+A cold first run takes roughly 30–45 minutes, almost all of it in
 `enrich_profiles.py`. Later runs are much faster because of the cache.
 
 `build_dataset.py` never touches the network, so you can re-run it as often as
@@ -146,8 +173,6 @@ you like while tuning what you want to see.
 | `MAX_PROFILE_FETCHES` | `12000` | Per-run cap on profile requests |
 | `ANNUAL_YEARS` | `4` | Annual frames to pull |
 | `INSTANT_QUARTERS` | `6` | Balance-sheet frames to pull |
-| `ENABLE_PRICES` | `1` | Set to `0` to skip Stooq entirely |
-| `PRICE_HISTORY_BUDGET` | `2500` | Per-run cap on price-history requests |
 | `LOG_LEVEL` | `INFO` | Set to `DEBUG` to see individual request failures |
 
 ## Reading the data honestly
@@ -164,11 +189,7 @@ A few things that will otherwise mislead you:
   reported FY2025 in February is nine months stale by autumn. The
   `Latest Qtr Revenue` and `Qtr Revenue YoY %` columns exist to give you a
   freshness check, not a replacement.
-- **Prices are the weak link.** Stooq is a free third party with no
-  availability guarantee. Every price-derived column (market cap, all the
-  multiples, the return columns) inherits that uncertainty. The SEC columns
-  are authoritative; these are not. `Public Float` from the filing cover page
-  is the fallback size measure when a price is missing.
+- **Public float is stale by construction.** See the section above.
 - **Flags are observations, not verdicts.** A clinical-stage biotech trips
   *accumulated deficit* and *4+ prospectuses in 12m* by design — that's what
   the business model looks like. The flags are there to make unusual rows easy
@@ -180,7 +201,7 @@ A few things that will otherwise mislead you:
 ## Notes on what was deliberately left out
 
 - **IPO dates.** The SEC maintains no universal structured IPO-date field.
-  The earlier version of this project searched S-1 and F-1 text for explicit
+  An earlier version of this project searched S-1 and F-1 text for explicit
   language, which cost thousands of multi-megabyte document downloads to
   populate a column that was blank for most companies anyway. `First EDGAR
   Filing` is given instead, clearly labelled as what it is: the date the
@@ -201,8 +222,7 @@ common.py                 shared HTTP client: rate limiting, caching, retries
 build_universe.py         step 1 — ticker list and CIK mapping
 enrich_profiles.py        step 2 — SEC company metadata and filing behaviour
 enrich_fundamentals.py    step 3 — XBRL frames fundamentals
-enrich_prices.py          step 4 — Stooq prices (optional)
-build_dataset.py          step 5 — join, derive, write CSV + XLSX
+build_dataset.py          step 4 — join, derive, write CSV + XLSX
 requirements.txt
 .github/workflows/refresh-dataset.yml
 ```
@@ -219,12 +239,13 @@ one of them can be re-run on its own without redoing the others.
   and `www.sec.gov/Archives/edgar/xbrl/companyfacts.zip` replace thousands of
   requests with a single large download. Worth switching to if the per-company
   profile step ever becomes the bottleneck.
-- **FRED** (`fred.stlouisfed.org`) — free with a no-cost API key. Useful if you
-  want macro series alongside the company data.
-- **Treasury FiscalData API** — free, no key, for yield curves.
+- **SEC full-text search** (`efts.sec.gov`) — free, and useful for finding
+  companies whose filings mention a specific technology, customer or risk.
+- **FRED** (`fred.stlouisfed.org`) — free with a no-cost API key, for macro
+  series alongside the company data.
 
 ## Licence and disclaimer
 
 The code is yours to do as you like with. The data comes from public filings
-and free third-party sources and is provided as-is, with no warranty of
-accuracy or completeness. Nothing in this repository is investment advice.
+and is provided as-is, with no warranty of accuracy or completeness. Nothing in
+this repository is investment advice.

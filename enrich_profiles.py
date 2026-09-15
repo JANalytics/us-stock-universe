@@ -94,10 +94,12 @@ def _months_between(earlier: str, later: dt.date) -> str:
         return ""
     return str(round((later - d).days / 30.44, 1))
 
+
 def _join(values) -> str:
     """The SEC sometimes emits nulls inside these arrays. Drop them."""
     return ", ".join(str(v).strip() for v in (values or []) if v)
- 
+
+
 def parse_submissions(cik: int, data: dict, today: dt.date) -> dict:
     addr = (data.get("addresses") or {}).get("business") or {}
     former = [n.get("name") for n in data.get("formerNames", []) if n.get("name")]
@@ -272,7 +274,7 @@ def main() -> int:
 
         try:
             results[cik] = parse_submissions(cik, data, today)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:  # noqa: BLE001 - one odd filer must not kill the run
             log.warning("CIK %s parsed badly: %s", cik, exc)
             failed += 1
             if cik in previous:

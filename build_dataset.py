@@ -1,18 +1,35 @@
 """
-build_dataset.py  —  STEP 5 of the pipeline
+build_dataset.py  —  FINAL STEP of the pipeline
 
-Joins the four layers, computes the ratios you would otherwise compute by
-hand, and writes the browsable output.
+Joins the three SEC-derived layers, computes the ratios you would otherwise
+compute by hand, and writes the browsable output.
 
 No network access at all. This step is pure local computation, so you can
 re-run it as often as you like while you tune what you want to see.
+
+A note on valuation
+-------------------
+There is no price data in this dataset, by design — every number here comes
+from SEC filings, which means it is authoritative and will not silently rot
+when some free third-party endpoint changes.
+
+The cost of that is you cannot compute a live P/E. Two things substitute:
+
+  * Per-share columns. Revenue, book value, free cash flow and net cash are
+    all expressed per share, so once you look up a price for a company you
+    actually care about, the multiple is one division away.
+  * Public float, from the 10-K cover page. It is a real dollar figure filed
+    with the SEC, but it is measured on one specific date — usually the last
+    business day of the company's most recent second quarter — so it can be
+    up to a year stale, and it excludes insider-held shares. Treat the
+    Float/... ratios as a rough sort order for browsing, never as a valuation.
 
 Outputs
 -------
 us_listed_companies.csv   full dataset, one row per listed equity
 us_listed_companies.xlsx  same data with frozen headers, autofilters,
                           sensible number formats and a data-dictionary tab
-data/universe_snapshot.csv  dated copy, so you can diff week over week
+data/changes.csv          tickers added or removed since the last run
 """
 
 from __future__ import annotations
@@ -54,18 +71,13 @@ def load() -> pd.DataFrame:
     universe["CIK"] = universe["CIK"].astype(float).astype("Int64")
 
     df = universe
-    for name, key in (("profiles.csv", "CIK"), ("fundamentals.csv", "CIK")):
+    for name in ("profiles.csv", "fundamentals.csv"):
         part = read(name)
         if part.empty:
             continue
-        part[key] = pd.to_numeric(part[key], errors="coerce").astype("Int64")
-        part = part.drop_duplicates(subset=[key])
-        df = df.merge(part, on=key, how="left", suffixes=("", f"_{name[:4]}"))
-
-    prices = read("prices.csv")
-    if not prices.empty:
-        prices = prices.drop_duplicates(subset=["Ticker"])
-        df = df.merge(prices, on="Ticker", how="left")
+        part["CIK"] = pd.to_numeric(part["CIK"], errors="coerce").astype("Int64")
+        part = part.drop_duplicates(subset=["CIK"])
+        df = df.merge(part, on="CIK", how="left", suffixes=("", f"_{name[:4]}"))
 
     log.info("Joined dataset: %d rows x %d columns", len(df), len(df.columns))
     return df
@@ -81,9 +93,14 @@ def num(df: pd.DataFrame, col: str) -> pd.Series:
     return pd.to_numeric(df[col], errors="coerce")
 
 
+def text(df: pd.DataFrame, col: str) -> pd.Series:
+    if col not in df.columns:
+        return pd.Series("", index=df.index, dtype="object")
+    return df[col].fillna("").astype(str).str.strip()
+
+
 def ratio(numerator: pd.Series, denominator: pd.Series) -> pd.Series:
-    den = denominator.replace(0, np.nan)
-    return numerator / den
+    return numerator / denominator.replace(0, np.nan)
 
 
 def pct(series: pd.Series, digits: int = 2) -> pd.Series:
@@ -122,30 +139,23 @@ def derive(df: pd.DataFrame) -> pd.DataFrame:
     diluted = num(out, "DilutedShares")
     diluted_1 = num(out, "DilutedShares FY-1")
     public_float = num(out, "PublicFloat")
-    price = num(out, "Price")
 
     fcf = ocf - capex
     total_debt = ltd + cud
     liquid = cash + sti
-    market_cap = price * shares
-    # Fall back to public float when we have no price. It understates market
-    # cap (it excludes insider-held shares) but it is the right order of
-    # magnitude and it comes straight from the filing.
-    size_proxy = market_cap.fillna(public_float)
-    ev = market_cap + total_debt - liquid
+    net_cash = liquid - total_debt
 
-    out["Shares Outstanding (M)"] = (shares / MILLION).round(2)
-    out["Market Cap ($M)"] = (market_cap / MILLION).round(1)
+    # --- size ---
     out["Public Float ($M)"] = (public_float / MILLION).round(1)
-    out["Size Proxy ($M)"] = (size_proxy / MILLION).round(1)
-    out["Enterprise Value ($M)"] = (ev / MILLION).round(1)
+    out["Shares Outstanding (M)"] = (shares / MILLION).round(2)
 
+    # --- absolute figures, in millions for readability ---
     out["Revenue ($M)"] = (revenue / MILLION).round(1)
     out["Revenue FY-1 ($M)"] = (revenue_1 / MILLION).round(1)
     out["Revenue FY-2 ($M)"] = (revenue_2 / MILLION).round(1)
-    out["Net Income ($M)"] = (net_income / MILLION).round(1)
-    out["Operating Income ($M)"] = (op_income / MILLION).round(1)
     out["Gross Profit ($M)"] = (gross_profit / MILLION).round(1)
+    out["Operating Income ($M)"] = (op_income / MILLION).round(1)
+    out["Net Income ($M)"] = (net_income / MILLION).round(1)
     out["Operating Cash Flow ($M)"] = (ocf / MILLION).round(1)
     out["CapEx ($M)"] = (capex / MILLION).round(1)
     out["Free Cash Flow ($M)"] = (fcf / MILLION).round(1)
@@ -155,8 +165,14 @@ def derive(df: pd.DataFrame) -> pd.DataFrame:
     out["Shareholders Equity ($M)"] = (equity / MILLION).round(1)
     out["Cash & Investments ($M)"] = (liquid / MILLION).round(1)
     out["Total Debt ($M)"] = (total_debt / MILLION).round(1)
-    out["Net Cash ($M)"] = ((liquid - total_debt) / MILLION).round(1)
+    out["Net Cash ($M)"] = (net_cash / MILLION).round(1)
     out["Retained Earnings ($M)"] = (retained / MILLION).round(1)
+
+    # --- per share: the bridge to any price you look up yourself ---
+    out["Revenue per Share"] = ratio(revenue, shares).round(2)
+    out["Book Value per Share"] = ratio(equity, shares).round(2)
+    out["FCF per Share"] = ratio(fcf, shares).round(2)
+    out["Net Cash per Share"] = ratio(net_cash, shares).round(2)
 
     # --- margins and returns ---
     out["Gross Margin %"] = pct(ratio(gross_profit, revenue))
@@ -167,6 +183,7 @@ def derive(df: pd.DataFrame) -> pd.DataFrame:
     out["Stock Comp % of Revenue"] = pct(ratio(sbc, revenue))
     out["Return on Equity %"] = pct(ratio(net_income, equity))
     out["Return on Assets %"] = pct(ratio(net_income, assets))
+    out["Return on Capital %"] = pct(ratio(op_income, (equity + total_debt)))
 
     # --- growth ---
     out["Revenue Growth 1Y %"] = pct(ratio(revenue, revenue_1) - 1)
@@ -185,23 +202,22 @@ def derive(df: pd.DataFrame) -> pd.DataFrame:
     # --- balance sheet health ---
     out["Current Ratio"] = ratio(assets_cur, liab_cur).round(2)
     out["Debt / Equity"] = ratio(total_debt, equity).round(2)
-    out["Net Debt / FCF"] = ratio(total_debt - liquid, fcf).round(2)
+    out["Net Debt / FCF"] = ratio(-net_cash, fcf).round(2)
     out["Interest Coverage"] = ratio(op_income, interest).round(2)
+    out["Cash % of Assets"] = pct(ratio(liquid, assets))
 
-    # --- valuation ---
-    out["P/E"] = ratio(market_cap, net_income.where(net_income > 0)).round(2)
-    out["P/S"] = ratio(market_cap, revenue).round(2)
-    out["P/B"] = ratio(market_cap, equity.where(equity > 0)).round(2)
-    out["EV/Sales"] = ratio(ev, revenue).round(2)
-    out["EV/EBIT"] = ratio(ev, op_income.where(op_income > 0)).round(2)
-    out["FCF Yield %"] = pct(ratio(fcf, market_cap))
-    out["Dividend Yield %"] = pct(ratio(dividends, market_cap))
-    out["Buyback Yield %"] = pct(ratio(buybacks, market_cap))
+    # --- rough valuation anchors, float-based. See module docstring. ---
+    out["Float / Revenue"] = ratio(public_float, revenue).round(2)
+    out["Float / Net Income"] = ratio(public_float, net_income.where(net_income > 0)).round(2)
+    out["Float / Book Value"] = ratio(public_float, equity.where(equity > 0)).round(2)
+    out["Float / FCF"] = ratio(public_float, fcf.where(fcf > 0)).round(2)
+
+    out["Shareholder Return ($M)"] = ((dividends + buybacks) / MILLION).round(1)
     out["Rule of 40"] = (
         out["Revenue Growth 1Y %"].fillna(0) + out["FCF Margin %"].fillna(0)
     ).round(1)
 
-    # --- simple boolean handles for filtering in Excel ---
+    # --- simple handles for filtering in Excel ---
     out["Profitable"] = np.where(net_income > 0, "Y", np.where(net_income.notna(), "N", ""))
     out["FCF Positive"] = np.where(fcf > 0, "Y", np.where(fcf.notna(), "N", ""))
     out["Growing"] = np.where(
@@ -209,22 +225,15 @@ def derive(df: pd.DataFrame) -> pd.DataFrame:
         np.where(out["Revenue Growth 1Y %"].notna(), "N", ""),
     )
     out["Net Cash Positive"] = np.where(
-        (liquid - total_debt) > 0, "Y",
-        np.where((liquid - total_debt).notna(), "N", ""),
+        net_cash > 0, "Y", np.where(net_cash.notna(), "N", "")
     )
 
-    out = add_flags(out, equity, retained, diluted, diluted_1)
+    out = add_flags(out, equity, retained)
     out["Data Completeness %"] = completeness(out)
     return out
 
 
-def text(df: pd.DataFrame, col: str) -> pd.Series:
-    if col not in df.columns:
-        return pd.Series("", index=df.index, dtype="object")
-    return df[col].fillna("").astype(str).str.strip()
-
-
-def add_flags(out: pd.DataFrame, equity, retained, diluted, diluted_1) -> pd.DataFrame:
+def add_flags(out: pd.DataFrame, equity, retained) -> pd.DataFrame:
     """
     A single human-readable column of things worth a second look.
 
@@ -264,11 +273,13 @@ def add_flags(out: pd.DataFrame, equity, retained, diluted, diluted_1) -> pd.Dat
     flags = parts[0]
     for part in parts[1:]:
         joined = flags.str.cat(part, sep="; ")
-        flags = np.where(
-            (flags != "") & (part != ""), joined,
-            np.where(flags != "", flags, part),
+        flags = pd.Series(
+            np.where(
+                (flags != "") & (part != ""), joined,
+                np.where(flags != "", flags, part),
+            ),
+            index=out.index,
         )
-        flags = pd.Series(flags, index=out.index)
 
     out["Flags"] = flags
     out["Flag Count"] = count
@@ -278,7 +289,7 @@ def add_flags(out: pd.DataFrame, equity, retained, diluted, diluted_1) -> pd.Dat
 KEY_FIELDS = [
     "Revenue ($M)", "Net Income ($M)", "Total Assets ($M)",
     "Shareholders Equity ($M)", "Operating Cash Flow ($M)",
-    "Shares Outstanding (M)", "Price", "Industry (SIC Description)",
+    "Shares Outstanding (M)", "Industry (SIC Description)",
 ]
 
 
@@ -305,31 +316,31 @@ COLUMN_ORDER = [
     "Sector", "Industry (SIC Description)", "SIC Code", "CIK",
     "Business City", "Business State", "Business Country",
     "State of Incorporation", "Filer Category", "Entity Type",
-    # size and valuation
-    "Price", "Price Date", "Market Cap ($M)", "Public Float ($M)",
-    "Size Proxy ($M)", "Enterprise Value ($M)", "Shares Outstanding (M)",
-    "P/E", "P/S", "P/B", "EV/Sales", "EV/EBIT", "FCF Yield %",
-    "Dividend Yield %", "Buyback Yield %",
+    # size
+    "Public Float ($M)", "PublicFloat As Of", "Shares Outstanding (M)",
+    "Revenue ($M)", "Total Assets ($M)",
+    # rough valuation anchors
+    "Float / Revenue", "Float / Net Income", "Float / Book Value", "Float / FCF",
+    # per share
+    "Revenue per Share", "Book Value per Share", "FCF per Share",
+    "Net Cash per Share", "EPSDiluted",
     # income statement
-    "Revenue ($M)", "Revenue FY-1 ($M)", "Revenue FY-2 ($M)",
-    "Gross Profit ($M)", "Operating Income ($M)", "Net Income ($M)",
-    "EPSDiluted", "R&D ($M)", "Stock Comp ($M)",
-    # margins, returns, growth
+    "Revenue FY-1 ($M)", "Revenue FY-2 ($M)", "Gross Profit ($M)",
+    "Operating Income ($M)", "Net Income ($M)", "R&D ($M)", "Stock Comp ($M)",
+    # margins and returns
     "Gross Margin %", "Operating Margin %", "Net Margin %", "FCF Margin %",
-    "Return on Equity %", "Return on Assets %", "R&D % of Revenue",
-    "Stock Comp % of Revenue",
+    "Return on Equity %", "Return on Assets %", "Return on Capital %",
+    "R&D % of Revenue", "Stock Comp % of Revenue",
+    # growth
     "Revenue Growth 1Y %", "Revenue CAGR 2Y %", "Net Income Growth 1Y %",
     "Latest Qtr Revenue ($M)", "Qtr Revenue YoY %", "Rule of 40",
     "Share Count Change 1Y %",
     # cash flow and balance sheet
     "Operating Cash Flow ($M)", "CapEx ($M)", "Free Cash Flow ($M)",
-    "Total Assets ($M)", "Shareholders Equity ($M)", "Cash & Investments ($M)",
-    "Total Debt ($M)", "Net Cash ($M)", "Retained Earnings ($M)",
+    "Shareholders Equity ($M)", "Cash & Investments ($M)", "Total Debt ($M)",
+    "Net Cash ($M)", "Retained Earnings ($M)", "Shareholder Return ($M)",
     "Current Ratio", "Debt / Equity", "Net Debt / FCF", "Interest Coverage",
-    # price behaviour
-    "52W High", "52W Low", "Pct Off 52W High", "Pct Above 52W Low",
-    "200D MA", "Pct Above 200D MA", "Avg Dollar Volume 20D",
-    "Return 3M %", "Return 12M %",
+    "Cash % of Assets",
     # filing behaviour
     "Latest Annual Report", "Latest Annual Form", "Months Since Annual Report",
     "Latest Quarterly Report", "Latest Filing Date", "First EDGAR Filing",
@@ -355,8 +366,12 @@ def order_columns(df: pd.DataFrame) -> pd.DataFrame:
 # ---------------------------------------------------------------------------
 
 DICTIONARY = [
-    ("Size Proxy ($M)", "Market cap when a price is available, otherwise SEC EntityPublicFloat."),
-    ("P/E", "Market cap / net income. Blank when net income is zero or negative."),
+    ("Public Float ($M)", "Market value of shares held by non-affiliates, from the 10-K cover page. Filed with the SEC, but measured on one date — check 'PublicFloat As Of'. It can be up to a year stale and excludes insider-held shares."),
+    ("Float / Revenue", "Public float divided by annual revenue. A rough sort order for browsing, not a valuation — the float date and the fiscal year end are usually months apart."),
+    ("Revenue per Share", "Annual revenue / shares outstanding. Divide any price you look up by this to get a price-to-sales ratio."),
+    ("Book Value per Share", "Shareholders equity / shares outstanding. Compare against a price for price-to-book."),
+    ("Net Cash per Share", "(Cash + short-term investments − total debt) / shares. When this is a large fraction of the share price, the operating business is being valued cheaply."),
+    ("Return on Capital %", "Operating income / (equity + total debt). Less distorted by leverage than return on equity."),
     ("Rule of 40", "Revenue growth % + FCF margin %. A software-industry rule of thumb."),
     ("Share Count Change 1Y %", "Change in weighted-average diluted shares. Positive means dilution."),
     ("424B Last 12M", "Prospectus filings in the last year. Usually indicates capital raises."),
@@ -371,11 +386,11 @@ DICTIONARY = [
 ]
 
 NOTES = [
-    "All figures come from company filings and are historical. Nothing here is a recommendation.",
-    "Annual figures are the most recent fiscal year each company reported, so different rows can cover different periods. Check 'Revenue Period End'.",
-    "Financial-sector filers (banks, insurers, REITs) often leave Revenue and Gross Profit blank because their income statements use different XBRL tags.",
-    "Prices come from a free third-party source and may lag or be missing. SEC data is authoritative; price-derived columns are not.",
-    "A blank cell means the company did not report that tag, not that the value is zero.",
+    "Every figure here comes from SEC filings. Nothing is a recommendation, and none of it is adjusted for restatements, share-class overlap or one-off items.",
+    "There is no price data in this dataset. Use the per-share columns with a price you look up to get any multiple you want.",
+    "Annual figures are the most recent fiscal year each company reported, so different rows can cover different periods. Check 'Revenue Period End' before comparing two companies.",
+    "Financial-sector filers (banks, insurers, REITs) often leave Revenue and Gross Profit blank because their income statements use different XBRL tags. Blank does not mean zero.",
+    "Public float is filed on the 10-K cover page as of a single date, typically the last business day of the company's second quarter. The Float/... ratios inherit that staleness.",
 ]
 
 
@@ -389,6 +404,10 @@ def write_excel(df: pd.DataFrame, path: Path) -> None:
 
     money = [c for c in df.columns if c.endswith("($M)")]
     percent = [c for c in df.columns if c.endswith("%")]
+    wide = {
+        "Issuer Name", "SEC Company Name", "Industry (SIC Description)",
+        "Flags", "Security Name", "Former Names",
+    }
 
     with pd.ExcelWriter(path, engine="xlsxwriter") as writer:
         df.to_excel(writer, sheet_name="Universe", index=False)
@@ -408,7 +427,7 @@ def write_excel(df: pd.DataFrame, path: Path) -> None:
                 width, fmt = 14, fmt_money
             elif name in percent:
                 width, fmt = 12, fmt_pct
-            elif name in ("Issuer Name", "SEC Company Name", "Industry (SIC Description)", "Flags", "Security Name", "Former Names"):
+            elif name in wide:
                 width, fmt = 34, None
             else:
                 width, fmt = 13, None
@@ -427,7 +446,9 @@ def write_excel(df: pd.DataFrame, path: Path) -> None:
         meta.write(0, 1, dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"))
         meta.write(1, 0, "Rows", bold)
         meta.write(1, 1, len(df))
-        row = 3
+        meta.write(2, 0, "Source", bold)
+        meta.write(2, 1, "SEC EDGAR and Nasdaq Trader. No price data.")
+        row = 4
         meta.write(row, 0, "How to read this", bold)
         row += 1
         for note in NOTES:
@@ -444,7 +465,7 @@ def write_excel(df: pd.DataFrame, path: Path) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Main
+# Change log
 # ---------------------------------------------------------------------------
 
 def write_changes(df: pd.DataFrame, previous_path: Path) -> None:
@@ -472,7 +493,7 @@ def write_changes(df: pd.DataFrame, previous_path: Path) -> None:
 
     added_cols = [c for c in
                   ["Ticker", "Issuer Name", "Exchange", "Sector",
-                   "Industry (SIC Description)", "Size Proxy ($M)",
+                   "Industry (SIC Description)", "Public Float ($M)",
                    "Revenue ($M)", "First EDGAR Filing", "Flags"]
                   if c in added.columns]
 
@@ -480,18 +501,26 @@ def write_changes(df: pd.DataFrame, previous_path: Path) -> None:
     for _, r in added[added_cols].iterrows():
         rows.append({"Change": "added", **r.to_dict()})
     for _, r in removed.iterrows():
-        rows.append({"Change": "removed", "Ticker": r["Ticker"], "Issuer Name": r.get("Issuer Name", "")})
+        rows.append({
+            "Change": "removed",
+            "Ticker": r["Ticker"],
+            "Issuer Name": r.get("Issuer Name", ""),
+        })
 
     out = DATA_DIR / "changes.csv"
     pd.DataFrame(rows).to_csv(out, index=False)
     log.info("Wrote %s — %d added, %d removed since last run", out, len(added), len(removed))
 
 
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
+
 def main() -> int:
     df = derive(load())
     df = order_columns(df)
 
-    sort_key = "Size Proxy ($M)" if "Size Proxy ($M)" in df.columns else "Ticker"
+    sort_key = "Public Float ($M)" if "Public Float ($M)" in df.columns else "Revenue ($M)"
     df = df.sort_values(sort_key, ascending=False, na_position="last")
 
     csv_path = ROOT / "us_listed_companies.csv"
@@ -502,13 +531,14 @@ def main() -> int:
     df.to_csv(csv_path, index=False)
     write_excel(df, xlsx_path)
 
-    filled = int(df["Revenue ($M)"].notna().sum()) if "Revenue ($M)" in df else 0
-    priced = int(df["Price"].notna().sum()) if "Price" in df else 0
+    with_revenue = int(df["Revenue ($M)"].notna().sum()) if "Revenue ($M)" in df else 0
+    with_float = int(df["Public Float ($M)"].notna().sum()) if "Public Float ($M)" in df else 0
+    flagged = int(pd.to_numeric(df["Flag Count"], errors="coerce").fillna(0).gt(0).sum())
+
     log.info("Wrote %s and %s", csv_path.name, xlsx_path.name)
     log.info(
-        "%d companies | %d with revenue | %d with a price | %d flagged",
-        len(df), filled, priced,
-        int(pd.to_numeric(df.get("Flag Count"), errors="coerce").fillna(0).gt(0).sum()),
+        "%d companies | %d with revenue | %d with a public float | %d flagged",
+        len(df), with_revenue, with_float, flagged,
     )
     return 0
 
