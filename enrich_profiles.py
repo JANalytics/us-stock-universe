@@ -94,7 +94,10 @@ def _months_between(earlier: str, later: dt.date) -> str:
         return ""
     return str(round((later - d).days / 30.44, 1))
 
-
+def _join(values) -> str:
+    """The SEC sometimes emits nulls inside these arrays. Drop them."""
+    return ", ".join(str(v).strip() for v in (values or []) if v)
+ 
 def parse_submissions(cik: int, data: dict, today: dt.date) -> dict:
     addr = (data.get("addresses") or {}).get("business") or {}
     former = [n.get("name") for n in data.get("formerNames", []) if n.get("name")]
@@ -165,8 +168,8 @@ def parse_submissions(cik: int, data: dict, today: dt.date) -> dict:
         "Business Country": addr.get("stateOrCountryDescription", "") or "",
         "Phone": data.get("phone", "") or "",
         "Fiscal Year End": data.get("fiscalYearEnd", "") or "",
-        "SEC Exchanges": ", ".join(data.get("exchanges") or []),
-        "SEC Tickers": ", ".join(data.get("tickers") or []),
+        "SEC Exchanges": _join(data.get("exchanges")),
+        "SEC Tickers": _join(data.get("tickers")),
         "Former Names": "; ".join(former),
         "First EDGAR Filing": first_filing,
         "Latest Filing Date": latest_filing,
@@ -267,7 +270,14 @@ def main() -> int:
                 results[cik] = previous[cik]
             continue
 
-        results[cik] = parse_submissions(cik, data, today)
+        try:
+            results[cik] = parse_submissions(cik, data, today)
+        except Exception as exc:  # noqa: BLE001
+            log.warning("CIK %s parsed badly: %s", cik, exc)
+            failed += 1
+            if cik in previous:
+                results[cik] = previous[cik]
+            continue
         fetched += 1
 
         if i % 500 == 0:
