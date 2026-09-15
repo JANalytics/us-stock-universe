@@ -1,0 +1,9 @@
+.cache/
+__pycache__/
+*.pyc
+# Intermediate layers live in the Actions cache, not in git history.
+# Committing them weekly would add hundreds of MB a year for no benefit.
+data/universe.csv
+data/profiles.csv
+data/fundamentals.csv
+data/prices.csv
