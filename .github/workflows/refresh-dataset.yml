@@ -2,16 +2,13 @@ name: Refresh stock universe
 
 on:
   schedule:
-    # 07:20 UTC on Saturdays. Weekends are quiet on the SEC's servers, and
-    # the odd minute avoids the top-of-the-hour stampede that every other
-    # scheduled job on GitHub joins.
-    - cron: "20 7 * * 6"
+    # 07:20 UTC on Tuesdays and Saturdays. Twice a week is deliberate: GitHub
+    # evicts Actions caches after 7 days without a hit, and a once-weekly
+    # schedule sits right on that boundary. The Tuesday run is nearly free
+    # because everything is still inside its TTL — it exists to keep the
+    # cache warm so the Saturday run never has to go cold.
+    - cron: "20 7 * * 2,6"
   workflow_dispatch:
-    inputs:
-      skip_prices:
-        description: "Skip the Stooq price step"
-        type: boolean
-        default: false
 
 # Two copies of this job running at once would double our request rate
 # against the SEC, which is the one thing the fair-access policy counts.
@@ -25,7 +22,7 @@ permissions:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 240
 
     env:
       SEC_USER_AGENT: ${{ secrets.SEC_USER_AGENT }}
@@ -37,9 +34,6 @@ jobs:
       ANNUAL_YEARS: "4"
       INSTANT_QUARTERS: "6"
       QUARTERLY_PERIODS: "6"
-      PRICE_HISTORY_BUDGET: "2500"
-      STOOQ_RATE_PER_SEC: "1.5"
-      ENABLE_PRICES: ${{ inputs.skip_prices && '0' || '1' }}
       PYTHONUNBUFFERED: "1"
 
     steps:
@@ -64,8 +58,8 @@ jobs:
 
       # The cache is what keeps this polite. Restored responses are either
       # reused outright or revalidated with a cheap conditional request, so a
-      # steady-state weekly run makes a small fraction of the requests a cold
-      # run would.
+      # steady-state run makes a small fraction of the requests a cold run
+      # would.
       - name: Restore HTTP cache
         uses: actions/cache/restore@v4
         id: http-cache
@@ -86,14 +80,11 @@ jobs:
       - name: Enrich with XBRL fundamentals
         run: python enrich_fundamentals.py
 
-      - name: Enrich with prices
-        continue-on-error: true
-        run: python enrich_prices.py
-
       - name: Build final dataset
         run: python build_dataset.py
 
       - name: Prune stale cache entries
+        if: always()
         run: |
           find .cache -type f -mtime +60 -delete 2>/dev/null || true
           echo "Cache size after prune: $(du -sh .cache 2>/dev/null | cut -f1)"
@@ -130,7 +121,6 @@ jobs:
               echo "- Columns: $(head -1 us_listed_companies.csv | tr ',' '\n' | wc -l)"
             fi
             if [ -f data/changes.csv ]; then
-              echo "- Added since last run: $(grep -c ',*added' data/changes.csv || echo 0)"
               echo ""
               echo "<details><summary>Listing changes</summary>"
               echo ""
