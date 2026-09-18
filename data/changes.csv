@@ -1,0 +1,14 @@
+Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
+added,CATL,Catalyst Acquisition Corp.,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-03-13,negative book equity; accumulated deficit; likely SPAC/shell
+added,ETRA,"Electra Therapeutics, Inc.",NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2025-10-30,
+added,MTAK,Market Technology Acquisition Corp,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-06-16,negative book equity; accumulated deficit; likely SPAC/shell
+added,OIG,Orion180 Insurance Group Inc.,NASDAQ,Insurance,"Insurance Agents, Brokers & Service",,,2026-04-27,
+added,TLAC,Three Lions Acquisition Corp.,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-05-19,accumulated deficit; likely SPAC/shell
+added,WCCB,West Coast Community Bancorp,NASDAQ,Banks,State Commercial Banks,,,2026-02-13,
+added,XIII,Churchill Capital Corp XIII,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-07-15,
+removed,ANY,Sphere 3D Corp.,,,,,,,
+removed,SNYR,Synergy CHC Corp.,,,,,,,
+removed,HCWC,Healthy Choice Wellness Corp. Class A Common Stock,,,,,,,
+removed,FEED,"ENvue Medical, Inc.",,,,,,,
+removed,SOBR,"SOBR Safe, Inc.",,,,,,,
+removed,RITR,Reitar Logtech Holdings Limited,,,,,,,
