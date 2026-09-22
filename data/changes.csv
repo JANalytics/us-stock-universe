@@ -1,1 +1,8 @@
-
+Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
+added,DRK,DarkHorse Technologies Inc.,NASDAQ,Capital Markets,Finance Services,16.0,11.2,2013-11-18,accumulated deficit; share count +20% in 1y
+added,HOST,Host Digital Inc. Class A Common Stock,NYSE American,Retail Trade,Retail-Grocery Stores,11.4,78.2,2023-02-14,accumulated deficit; share count +20% in 1y
+added,NWCL,newcleo plc,NASDAQ,Manufacturing,Fabricated Plate Work (Boiler Shops),,,2026-05-27,
+removed,NHIC,NewHold Investment Corp III,,,,,,,
+removed,HWH,HWH International Inc.,,,,,,,
+removed,BRR,"ProCap Financial, Inc.",,,,,,,
+removed,ALPX,Alpex Acquisition Corporation,,,,,,,
