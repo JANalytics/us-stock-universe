@@ -1,8 +1,13 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,DRK,DarkHorse Technologies Inc.,NASDAQ,Capital Markets,Finance Services,16.0,11.2,2013-11-18,accumulated deficit; share count +20% in 1y
-added,HOST,Host Digital Inc. Class A Common Stock,NYSE American,Retail Trade,Retail-Grocery Stores,11.4,78.2,2023-02-14,accumulated deficit; share count +20% in 1y
-added,NWCL,newcleo plc,NASDAQ,Manufacturing,Fabricated Plate Work (Boiler Shops),,,2026-05-27,
-removed,NHIC,NewHold Investment Corp III,,,,,,,
-removed,HWH,HWH International Inc.,,,,,,,
-removed,BRR,"ProCap Financial, Inc.",,,,,,,
-removed,ALPX,Alpex Acquisition Corporation,,,,,,,
+added,HUCK,"Huckleberry.ai, Inc.",NASDAQ,Software & IT Services,Services-Prepackaged Software,579.1,318.9,2010-11-19,late-filing notice; negative book equity; accumulated deficit
+added,ONEN,ONE Nuclear Energy Inc.,NASDAQ,Utilities,Electric Services,200.1,,2024-11-08,negative book equity; accumulated deficit
+added,ESYN,EnerSyn Global Inc.,NASDAQ,Wholesale Trade,"Wholesale-Drugs, Proprietaries & Druggists' Sundries",2.0,0.9,2021-12-20,accumulated deficit; share count +20% in 1y
+added,SVIA,"Silvia, Inc.",NASDAQ,Capital Markets,Finance Services,0.0,,2025-07-14,accumulated deficit; 4+ prospectuses in 12m
+added,ADRX,"ADARx Pharmaceuticals, Inc.",NASDAQ,Biotech & Pharma,Pharmaceutical Preparations,,,2020-02-06,
+added,ALPX,Alpex Acquisition Corporation,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-04-10,negative book equity; accumulated deficit; likely SPAC/shell
+added,FJDI,ARC Group Securities Acquisition I,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2025-11-06,negative book equity; accumulated deficit
+added,PNAQ,Pinnacle Acquisition Corporation Class A Ordinary Shares,NYSE,"Finance, Insurance & Real Estate",Blank Checks,,,2026-06-30,negative book equity; accumulated deficit; likely SPAC/shell
+removed,DOMO,"Domo, Inc.",,,,,,,
+removed,TBPH,"Theravance Biopharma, Inc.",,,,,,,
+removed,HVII,Hennessy Capital Investment Corp. VII,,,,,,,
+removed,PLTS,Platinum Analytics Cayman Limited,,,,,,,
