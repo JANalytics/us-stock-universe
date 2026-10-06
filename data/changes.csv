@@ -1,15 +1,15 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,ACCV,Accelevation Holdings Corp.,NASDAQ,Manufacturing,Electrical Industrial Apparatus,,,2026-06-30,
-added,FGC,FG Communities Holdings Inc.,NASDAQ,Capital Markets,Finance Services,,2.4,2013-12-06,accumulated deficit; share count +20% in 1y; 4+ prospectuses in 12m
-added,IVAI,Ives Ultra AI Opportunities Inc. Common Stock,NYSE,,,,,2025-08-08,
-added,RZAI,Roze AI Inc.,NASDAQ,Software & IT Services,Services-Computer Integrated Systems Design,,,2025-10-14,
-added,SAIQ,WISeSat.Space Holdings Corp.,NASDAQ,"Transport, Utilities & Communications","Communications Services, NEC",,,2025-12-23,
-added,VYLR,Vylor Inc. Common Stock,NYSE,"Agriculture, Forestry & Fishing",Agricultural Production-Crops,,,2026-04-17,
-removed,GETY,"Getty Images Holdings, Inc. Class A Common Stock",,,,,,,
-removed,COLA,Columbus Acquisition Corp,,,,,,,
-removed,NSTS,"NSTS Bancorp, Inc.",,,,,,,
-removed,FSEA,"First Seacoast Bancorp, Inc.",,,,,,,
-removed,AMZE,"Amaze Holdings, Inc. Common Stock",,,,,,,
-removed,VRME,"VerifyMe, Inc.",,,,,,,
-removed,AIXC,"AIxCrypto Holdings, Inc.",,,,,,,
-removed,VACI,Viking Acquisition Corp. I Class A Ordinary Shares,,,,,,,
+added,MMEDV,"MiniMed Group, Inc.",NASDAQ,Medical Devices,Surgical & Medical Instruments & Apparatus,0.0,3102.0,2025-05-30,accumulated deficit
+added,FFR,FF EAI Robotics Ecosystem Inc.,NASDAQ,Capital Markets,Finance Services,,,2009-03-17,late-filing notice; accumulated deficit; share count +20% in 1y
+added,IPHX,Inflection Point Acquisition Corp. VIII,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-08-10,negative book equity; accumulated deficit; likely SPAC/shell
+added,NSTR,"NorthStar Earth & Space Enterprises, Inc. Common Shares",NYSE American,"Transport, Utilities & Communications","Communications Services, NEC",,,2025-08-13,negative book equity; accumulated deficit
+added,OPNW,"OpenWorld, Inc.",NASDAQ,Capital Markets,Finance Services,,16.4,2000-11-13,accumulated deficit; share count +20% in 1y
+added,TBCV,"Thunder Bridge Capital Partners V, Ltd.",NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-06-12,negative book equity; accumulated deficit
+added,VJET,"Flyte Aviation, Inc. Common Stock",NYSE American,Medical Devices,Surgical & Medical Instruments & Apparatus,,0.8,2017-09-20,late-filing notice; accumulated deficit
+removed,QRVO,"Qorvo, Inc.",,,,,,,
+removed,DRCT,"Direct Digital Holdings, Inc.",,,,,,,
+removed,GWH,"ESS Tech, Inc. Common Stock",,,,,,,
+removed,LESL,"Leslie's, Inc.",,,,,,,
+removed,PSKY,Paramount Skydance Corporation,,,,,,,
+removed,VTAK,"Catheter Precision, Inc. Common Stock",,,,,,,
+removed,WALD,Waldencast plc,,,,,,,
