@@ -1,17 +1,4 @@
-Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,AIOK,AI OKTO CORP.,NASDAQ,"Transport, Utilities & Communications",Deep Sea Foreign Transportation of  Freight,,,2025-12-17,
-added,BBCI,Bradbury Capital Inc.,NASDAQ,Services,"Services-Business Services, NEC",,,2023-08-02,
-added,RTSN,"Retension Pharmaceuticals, Inc.",NASDAQ,Biotech & Pharma,Pharmaceutical Preparations,,,2023-12-05,
-added,SCAT,Southern Cross Acquisition II Corp.,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-06-01,
-added,SKYD,Skydance Corporation Class B Common Stock,NYSE,"Transport, Utilities & Communications",Television Broadcasting Stations,,29213.0,2024-11-04,accumulated deficit
-added,TRXB,"TRex Bio, Inc.",NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2026-06-26,
-added,WORX,SCWorx Corp.,NASDAQ,Software & IT Services,Services-Computer Processing & Data Preparation,,2.9,2016-05-12,accumulated deficit; share count +20% in 1y
-added,WQEY,WISeQey Corp,NASDAQ,Software & IT Services,Services-Computer Processing & Data Preparation,,,2026-06-15,
-removed,BLFS,"BioLife Solutions, Inc.",,,,,,,
-removed,HKIT,Hitek Global Inc.,,,,,,,
-removed,ILLR,Triller Group Inc.,,,,,,,
-removed,MAMK,MaxsMaking Inc.,,,,,,,
-removed,NVNI,Nvni Group Limited,,,,,,,
-removed,SLP,"Simulations Plus, Inc.",,,,,,,
-removed,SPKL,Spark I Acquisition Corp.,,,,,,,
-removed,WBD,"Warner Bros. Discovery, Inc.",,,,,,,
+Change,Ticker,Issuer Name
+removed,MIMI,Mint Incorporation Limited
+removed,QNCX,"Quince Therapeutics, Inc."
+removed,SKK,SKK Holdings Limited
