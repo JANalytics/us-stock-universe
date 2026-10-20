@@ -1,15 +1,8 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,AMRO,Amaero Inc.,NASDAQ,Manufacturing,Miscellaneous Primary Metal Products,,,2026-07-10,
-added,AXNX,Axonex AI Group Limited,NASDAQ,Services,"Services-Business Services, NEC",,3.1,2023-12-22,late-filing notice; accumulated deficit
-added,BDAI,"Biddance AI Systems, Inc.",NASDAQ,Software & IT Services,Services-Prepackaged Software,,6.5,2018-07-13,4+ prospectuses in 12m
-added,BMMX,Black Mammoth Metals Corporation,NASDAQ,Mining & Energy Extraction,Metal Mining,,,2022-05-20,
-added,CTY,"City Therapeutics, Inc.",NASDAQ,Biotech & Pharma,Pharmaceutical Preparations,,,2026-07-15,
-added,FLSC,Frazier Life Sciences Acquisition Corp. II,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-09-11,likely SPAC/shell
-added,IAM,"Iambic Therapeutics, Inc.",NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2023-10-12,
-added,IRLA,IRulya Therapeutics Inc.,NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2016-01-05,late-filing notice; exchange compliance issue; negative book equity; accumulated deficit
-added,RNTZ,Rantizo,NASDAQ,Construction,"Water, Sewer, Pipeline, Comm & Power Line Construction",,12.9,2023-09-20,late-filing notice; accumulated deficit
-added,TCXB,TCGX Acquisition Corp. II,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-09-25,likely SPAC/shell
-removed,CCO,"Clear Channel Outdoor Holdings, Inc. Common Stock",,,,,,,
-removed,IAE,Voya Asia Pacific High Dividend Equity Income Fund ING Asia Pacific High Dividend Equity Income Fund Common Shares of Beneficial Interest,,,,,,,
-removed,IHD,Voya Emerging Markets High Income Dividend Equity Fund Common Shares,,,,,,,
-removed,QETA,Quetta Acquisition Corporation,,,,,,,
+added,LCU,Lion Copper Corp.,NASDAQ,Mining & Energy Extraction,Metal Mining,,,2005-09-22,accumulated deficit; share count +20% in 1y
+removed,UUU,"Universal Safety Products, Inc. Common Stock",,,,,,,
+removed,MMEDV,"MiniMed Group, Inc.",,,,,,,
+removed,ACVA,ACV Auctions Inc. Class A Common Stock,,,,,,,
+removed,ATKR,Atkore Inc. Common Stock,,,,,,,
+removed,BZH,"Beazer Homes USA, Inc. Common Stock",,,,,,,
+removed,LRHC,La Rosa Holdings Corp.,,,,,,,
