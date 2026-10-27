@@ -1,11 +1,11 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,DCM,"DeFi Capital Markets, Inc. Common Stock",NYSE American,Wholesale Trade,"Wholesale-Electronic Parts & Equipment, NEC",8.4,4.8,1995-08-11,late-filing notice; accumulated deficit
-added,DAVI,Davion Healthcare Plc,NASDAQ,Medical Devices,Surgical & Medical Instruments & Apparatus,,,2025-08-04,
-added,LYCA,"Lycia Therapeutics, Inc.",NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2020-03-17,
-added,NANO,Forge Nano Holdings Inc.,NASDAQ,Manufacturing,"Special Industry Machinery, NEC",,,2026-05-05,negative book equity; accumulated deficit
-added,PAXG,Pine Tree Acquisition Corp.,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2025-09-12,likely SPAC/shell
-added,POM,POMDOCTOR LIMITED,NASDAQ,Retail Trade,Retail-Miscellaneous Retail,,57.2,2021-09-30,late-filing notice; exchange compliance issue; negative book equity; accumulated deficit; share count +20% in 1y
-added,SRTM,Stratum Holdings Corp.,NASDAQ,Real Estate,Real Estate Agents & Managers (For Others),,68.5,2021-12-17,late-filing notice; exchange compliance issue; negative book equity; accumulated deficit; share count +20% in 1y
-removed,ATII,Archimedes Tech SPAC Partners II Co.,,,,,,,
-removed,PERF,Perfect Corp. Class A Ordinary Share,,,,,,,
-removed,SDST,Stardust Power Inc.,,,,,,,
+added,AETR,Aetherion Technologies Inc.,NASDAQ,Manufacturing,Engines & Turbines,,23.3,2006-06-27,accumulated deficit; 4+ prospectuses in 12m
+added,MSGR,MSG Rangers Corp. Class A Common Stock,NYSE,Services,Services-Miscellaneous Amusement & Recreation,,,2026-05-15,
+removed,MSGS,Madison Square Garden Sports Corp. Class A Common Stock (New),,,,,,,
+removed,NATH,"Nathan's Famous, Inc.",,,,,,,
+removed,PAPL,Pineapple Financial Inc. Common Stock,,,,,,,
+removed,ACA,"Arcosa, Inc. Common Stock",,,,,,,
+removed,ELME,Elme Communities Common Stock,,,,,,,
+removed,VSME,VS Media Holdings Limited,,,,,,,
+removed,WEAV,"Weave Communications, Inc. Common Stock",,,,,,,
+removed,WPRT,Westport Fuel Systems Inc,,,,,,,
