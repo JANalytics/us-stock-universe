@@ -1,16 +1,11 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,MSGK,MSG Knickerbockers Corp. Class A Common Stock,NYSE,Services,Services-Miscellaneous Amusement & Recreation,4900.0,1153.8,2015-03-27,negative book equity; accumulated deficit
-added,NORD,Nordicus Partners Corporation,NASDAQ,Services,Services-Management Consulting Services,21.1,0.0,1996-05-10,late-filing notice; accumulated deficit; share count +20% in 1y
-added,PTIV,Pineapple Financial Inc. Common Stock,NYSE American,Capital Markets,Finance Services,5.4,3.0,2022-09-01,late-filing notice; accumulated deficit; share count +20% in 1y
-added,ASPE,"Aspen Neuroscience, Inc.",NASDAQ,Biotech & Pharma,Pharmaceutical Preparations,,,2026-03-30,
-added,AZR,"Azora Therapeutics, Inc.",NASDAQ,Biotech & Pharma,Pharmaceutical Preparations,,,2011-03-16,negative book equity; accumulated deficit; share count +20% in 1y
-added,BBTX,"Bambusa Therapeutics, Inc.",NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2025-01-08,
-added,FCDH,Forcendra Holding Limited,NASDAQ,Services,Services-Advertising Agencies,,7.5,2022-12-07,accumulated deficit; share count +20% in 1y
-added,FFTT,Masonglory Limited,NASDAQ,Construction,Construction - Special Trade Contractors,,23.6,2024-06-26,accumulated deficit
-added,GBC,"Georgia Banking Company, Inc.",NASDAQ,Banks,State Commercial Banks,,,2021-03-08,
-removed,DYNC,Dynamix Corporation,,,,,,,
-removed,ADIL,"Adial Pharmaceuticals, Inc",,,,,,,
-removed,GCTK,"GlucoTrack, Inc.",,,,,,,
-removed,LNAI,Lunai Bioworks Inc.,,,,,,,
-removed,MSGY,Masonglory Limited,,,,,,,
-removed,YHNA,YHN Acquisition I Limited,,,,,,,
+added,CASK,"Sempreon, Inc.",NASDAQ,Manufacturing,Beverages,,10.1,2019-09-13,late-filing notice; accumulated deficit; share count +20% in 1y
+added,NARA,"Narragansett Bancorp, Inc.",NASDAQ,Banks,"Savings Institutions, Not Federally Chartered",,,2026-06-12,
+removed,RAMP,"LiveRamp Holdings, Inc. Common Stock",,,,,,,
+removed,CBZ,"CBIZ, Inc. Common Stock",,,,,,,
+removed,HODO,House of Doge Inc.,,,,,,,
+removed,INDV,"Indivior Pharmaceuticals, Inc.",,,,,,,
+removed,KVUE,Kenvue Inc. Common Stock,,,,,,,
+removed,LXP,LXP Industrial Trust Common Stock (Maryland REIT),,,,,,,
+removed,MGPI,"MGP Ingredients, Inc.",,,,,,,
+removed,MLEC,Moolec Science SA,,,,,,,
