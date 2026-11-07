@@ -1,11 +1,7 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,CASK,"Sempreon, Inc.",NASDAQ,Manufacturing,Beverages,,10.1,2019-09-13,late-filing notice; accumulated deficit; share count +20% in 1y
-added,NARA,"Narragansett Bancorp, Inc.",NASDAQ,Banks,"Savings Institutions, Not Federally Chartered",,,2026-06-12,
-removed,RAMP,"LiveRamp Holdings, Inc. Common Stock",,,,,,,
-removed,CBZ,"CBIZ, Inc. Common Stock",,,,,,,
-removed,HODO,House of Doge Inc.,,,,,,,
-removed,INDV,"Indivior Pharmaceuticals, Inc.",,,,,,,
-removed,KVUE,Kenvue Inc. Common Stock,,,,,,,
-removed,LXP,LXP Industrial Trust Common Stock (Maryland REIT),,,,,,,
-removed,MGPI,"MGP Ingredients, Inc.",,,,,,,
-removed,MLEC,Moolec Science SA,,,,,,,
+added,AGLT,"Agility Robotics, Inc.",NASDAQ,Manufacturing,"General Industrial Machinery & Equipment, NEC",422.7,,2025-08-06,negative book equity; accumulated deficit
+added,CDLR,Cadeler plc Ordinary Shares,NYSE,"Transport, Utilities & Communications",Deep Sea Foreign Transportation of  Freight,,,2025-03-28,
+added,LEDR,Leader's Advantage Acquisition Corp.,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-04-29,likely SPAC/shell
+removed,CCXI,Churchill Capital Corp XI,,,,,,,
+removed,ALDF,Aldel Financial II Inc.,,,,,,,
+removed,GCDT,Green Circle Decarbonize Technology Limited Class A Ordinary Shares,,,,,,,
