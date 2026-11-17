@@ -1,18 +1,12 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,CRMN,Skyline Builders Group Holding Limited,NASDAQ,Construction,Construction - Special Trade Contractors,,50.1,2024-08-09,late-filing notice; accumulated deficit; share count +20% in 1y
-added,LOVI,Live Oak Acquisition Corp. VI,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2026-03-16,likely SPAC/shell
-added,MDRN,Modern Mining Technology Corp. Common Shares,NYSE American,Utilities,Refuse Systems,,,2022-04-22,
-added,OPHI,CollPlant Biotechnologies Ltd.,NASDAQ,Medical Devices,"Orthopedic, Prosthetic & Surgical Appliances & Supplies",,2.4,2015-02-20,accumulated deficit
-added,QUIT,"Achieve Life Sciences, Inc.",NASDAQ,Biotech & Pharma,In Vitro & In Vivo Diagnostic Substances,,,1996-05-24,negative book equity; accumulated deficit; share count +20% in 1y
-added,VVVV,vVARDIS Holding AG Class A Ordinary Shares,NYSE,Medical Devices,Surgical & Medical Instruments & Apparatus,,,2022-10-25,
-added,WWB,Windward Bio Group AG,NASDAQ,Biotech & Pharma,"Biological Products, (No Diagnostic Substances)",,,2026-07-24,
-added,XGPU,"Reliance Global Group, Inc.",NASDAQ,Insurance,"Insurance Agents, Brokers & Service",,12.4,2020-06-22,accumulated deficit; share count +20% in 1y; 4+ prospectuses in 12m
-added,ZYN,PTL LTD,NASDAQ,Wholesale Trade,Wholesale-Petroleum & Petroleum Products (No Bulk Stations),,71.6,2024-03-29,late-filing notice; share count +20% in 1y
-removed,ATCH,"AtlasClear Holdings, Inc. Common Stock",,,,,,,
-removed,CLGN,CollPlant Biotechnologies Ltd.,,,,,,,
-removed,HLSQ,Tessera Defense and Homeland Security Inc. Common Stock,,,,,,,
-removed,KAZR,Skyline Builders Group Holding Limited,,,,,,,
-removed,KNRX,KNOREX LTD. Class A Ordinary Shares,,,,,,,
-removed,KPTI,Karyopharm Therapeutics Inc.,,,,,,,
-removed,NXXT,"NextNRG, Inc.",,,,,,,
-removed,PTLE,PTL LTD,,,,,,,
+added,BRRK,Bluerock Acquisition Corp. II,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2025-12-08,negative book equity; accumulated deficit; likely SPAC/shell
+added,HZN,Bright Horizon Energy Corporation Common Stock,NYSE,Utilities,Electric Services,,2286.2,2000-12-22,
+added,PORT,Southport Acquisition Corp. II Class A Ordinary Shares,NYSE,"Finance, Insurance & Real Estate",Blank Checks,,,2026-08-07,negative book equity; accumulated deficit; likely SPAC/shell
+added,TXR,Torex Resources Inc. Common Shares,NYSE,Mining & Energy Extraction,Gold and Silver Ores,,,2012-11-05,
+removed,ACH,"Accendra Health, Inc. Common Stock",,,,,,,
+removed,BKH,Black Hills Corporation Common Stock,,,,,,,
+removed,DVLT,Datavault AI Inc.,,,,,,,
+removed,ITGR,Integer Holdings Corporation Common Stock,,,,,,,
+removed,NWE,"NorthWestern Energy Group, Inc.",,,,,,,
+removed,PLCE,"Children's Place, Inc. (The)",,,,,,,
+removed,VBNK,VersaBank,,,,,,,
