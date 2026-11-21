@@ -1,12 +1,17 @@
 Change,Ticker,Issuer Name,Exchange,Sector,Industry (SIC Description),Public Float ($M),Revenue ($M),First EDGAR Filing,Flags
-added,BRRK,Bluerock Acquisition Corp. II,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2025-12-08,negative book equity; accumulated deficit; likely SPAC/shell
-added,HZN,Bright Horizon Energy Corporation Common Stock,NYSE,Utilities,Electric Services,,2286.2,2000-12-22,
-added,PORT,Southport Acquisition Corp. II Class A Ordinary Shares,NYSE,"Finance, Insurance & Real Estate",Blank Checks,,,2026-08-07,negative book equity; accumulated deficit; likely SPAC/shell
-added,TXR,Torex Resources Inc. Common Shares,NYSE,Mining & Energy Extraction,Gold and Silver Ores,,,2012-11-05,
-removed,ACH,"Accendra Health, Inc. Common Stock",,,,,,,
-removed,BKH,Black Hills Corporation Common Stock,,,,,,,
-removed,DVLT,Datavault AI Inc.,,,,,,,
-removed,ITGR,Integer Holdings Corporation Common Stock,,,,,,,
-removed,NWE,"NorthWestern Energy Group, Inc.",,,,,,,
-removed,PLCE,"Children's Place, Inc. (The)",,,,,,,
-removed,VBNK,VersaBank,,,,,,,
+added,ANT,"Anthropic, PBC",NASDAQ,Software & IT Services,Services-Prepackaged Software,,,2026-06-01,
+added,CZZL,Cizzle Brands Corporation,NASDAQ,Manufacturing,Food and Kindred Products,,,2026-08-19,
+added,FDGX,First Digital Acquisition Corp Ltd.,NASDAQ,"Finance, Insurance & Real Estate",Blank Checks,,,2025-05-15,negative book equity; accumulated deficit; likely SPAC/shell
+added,FMBM,F&M Bank Corp. Common Stock,NYSE American,Banks,State Commercial Banks,,,1995-05-12,
+added,GUER,"Guerrilla RF, Inc.",NASDAQ,Semiconductors & Electronics,Semiconductors & Related Devices,,22.7,2021-01-04,negative book equity; accumulated deficit; 4+ prospectuses in 12m
+added,VRSA,Versa Bancorp,NASDAQ,Banks,"Commercial Banks, NEC",,,2025-12-15,
+added,ZOAR,Zoar Limited Ordinary Shares,NYSE American,Biotech & Pharma,Pharmaceutical Preparations,,,2025-09-16,negative book equity; accumulated deficit
+removed,IBO,"Impact BioMedical, Inc. Common Stock",,,,,,,
+removed,KOYN,CSLM Digital Asset Acquisition Corp III,,,,,,,
+removed,LXFR,Luxfer Holdings PLC Ordinary Shares,,,,,,,
+removed,MERC,Mercer International Inc.,,,,,,,
+removed,PCRX,"Pacira BioSciences, Inc.",,,,,,,
+removed,SCKT,"Socket Mobile, Inc.",,,,,,,
+removed,SHFS,"SHF Holdings, Inc.",,,,,,,
+removed,SSTI,"SoundThinking, Inc.",,,,,,,
+removed,UTZ,Utz Brands Inc Class A Common Stock,,,,,,,
